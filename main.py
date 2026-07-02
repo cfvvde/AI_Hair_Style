@@ -10,7 +10,6 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-# === 1. КОНСТАНТЫ И БАЗА ПРИЧЕСОК ===
 MODEL_URL = "https://storage.googleapis.com/mediapipe-models/image_segmenter/hair_segmenter/float32/latest/hair_segmenter.tflite"
 SEGMENTER_PATH = "hair_segmenter.tflite"
 SD_MODEL_ID = "Uminosachi/realisticVisionV51_v51VAE-inpainting"
@@ -42,7 +41,6 @@ HAIRSTYLES_DB = {
     }
 }
 
-# === 2. ИНИЦИАЛИЗАЦИЯ ИИ ДВИЖКА ===
 print("Запуск ИИ-модулей...")
 if not os.path.exists(SEGMENTER_PATH):
     urllib.request.urlretrieve(MODEL_URL, SEGMENTER_PATH)
@@ -69,7 +67,7 @@ print(f"Успешно! Активный девайс: {device.upper()}")
 def create_dual_subtracted_mask(raw_hair_mask, orig_bgr, length):
     h, w = raw_hair_mask.shape[:2]
 
-    # МАСКА 1: Волосы
+    # Маска 1: Волосы
     hair_layer = raw_hair_mask.copy()
     if length == "Длинные":
         kernel_vol = np.ones((25, 25), np.uint8)
@@ -85,7 +83,7 @@ def create_dual_subtracted_mask(raw_hair_mask, orig_bgr, length):
             cv2.rectangle(hair_layer, (fx + fw - int(fw * 0.2), fy + int(fh * 0.4)),
                           (min(w, fx + fw + int(fw * 0.5)), h), 255, -1)
 
-    # МАСКА 2: Вычитание
+    # Маска 2: Вычитание
     face_layer = np.zeros((h, w), np.uint8)
     gray = cv2.cvtColor(orig_bgr, cv2.COLOR_BGR2GRAY)
     faces = face_detector.detectMultiScale(gray, 1.1, 5, minSize=(120, 120))
@@ -97,7 +95,6 @@ def create_dual_subtracted_mask(raw_hair_mask, orig_bgr, length):
         axes = (int(fw * 0.42), int(fh * 0.62))
         cv2.ellipse(face_layer, (center_x, fy + int(fh * 0.52)), axes, 0, 0, 360, 255, -1)
 
-    # --- ФИНАЛЬНАЯ ОПЕРАЦИЯ: ВЫЧИТАНИЕ МАСКИ Б ИЗ МАСКИ А ---
     final_subtracted_mask = cv2.subtract(hair_layer, face_layer)
     return final_subtracted_mask
 
