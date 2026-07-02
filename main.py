@@ -91,9 +91,10 @@ def create_dual_subtracted_mask(raw_hair_mask, orig_bgr, length):
     if len(faces) > 0:
         fx, fy, fw, fh = max(faces, key=lambda b: b[2] * b[3])
         center_x = fx + fw // 2
-        # Строим плотный защитный овал лица (захватывает лоб, глаза, щеки, подбородок)
+
         axes = (int(fw * 0.42), int(fh * 0.62))
         cv2.ellipse(face_layer, (center_x, fy + int(fh * 0.52)), axes, 0, 0, 360, 255, -1)
+
 
     final_subtracted_mask = cv2.subtract(hair_layer, face_layer)
     return final_subtracted_mask
@@ -233,7 +234,6 @@ with gr.Blocks(title="ИИ Подбор Причесок") as demo:
             init_styles = list(HAIRSTYLES_DB["Мужская"]["Короткие"].keys()) + ["Свой вариант"]
             style_ui = gr.Dropdown(choices=init_styles, value=init_styles[0], label="Доступные модели стрижек")
 
-            # Текстовое поле ввода для своего варианта (скрыто по умолчанию)
             custom_prompt_ui = gr.Textbox(
                 label="Опишите желаемую прическу (на английском)",
                 placeholder="Например: dark blue messy undercut, cyberpunk style, k-pop haircut",
@@ -241,7 +241,6 @@ with gr.Blocks(title="ИИ Подбор Причесок") as demo:
                 lines=2
             )
 
-            # Логика интерактивного изменения UI элементов
             gender_ui.change(update_styles_dropdown, inputs=[gender_ui, length_ui], outputs=style_ui)
             length_ui.change(update_styles_dropdown, inputs=[gender_ui, length_ui], outputs=style_ui)
             style_ui.change(toggle_custom_prompt_visibility, inputs=[style_ui], outputs=custom_prompt_ui)
